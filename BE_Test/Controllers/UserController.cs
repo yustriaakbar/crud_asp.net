@@ -1,19 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using WebApplication1.Models;
 using WebApplication1.Helpers;
-using MySqlX.XDevAPI.Relational;
-using Microsoft.AspNetCore.Authorization;
-using System.Configuration;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebApplication1.Controllers
 {
@@ -258,36 +247,36 @@ namespace WebApplication1.Controllers
         }
 
         [HttpDelete("{id}")]
-            public JsonResult Delete(int id)
+        public JsonResult Delete(int id)
+        {
+            string query = @"delete from crud_new.users where Id=@Id;";
+
+            DataTable table = new DataTable();
+            string sqlDataSource = _configuration.GetConnectionString("DBAppCon");
+            MySqlDataReader myReader;
+            using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
             {
-                string query = @"delete from crud_new.users where Id=@Id;";
-
-                DataTable table = new DataTable();
-                string sqlDataSource = _configuration.GetConnectionString("DBAppCon");
-                MySqlDataReader myReader;
-                using (MySqlConnection mycon = new MySqlConnection(sqlDataSource))
+                mycon.Open();
+                using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
                 {
-                    mycon.Open();
-                    using (MySqlCommand myCommand = new MySqlCommand(query, mycon))
-                    {
-                        myCommand.Parameters.AddWithValue("@Id", id);
+                    myCommand.Parameters.AddWithValue("@Id", id);
 
-                        myReader = myCommand.ExecuteReader();
-                        table.Load(myReader);
+                    myReader = myCommand.ExecuteReader();
+                    table.Load(myReader);
 
-                        myReader.Close();
-                        mycon.Close();
-                    }
+                    myReader.Close();
+                    mycon.Close();
                 }
-                var response = new ApiResponse<object>
-                {
-                    Status = true,
-                    Message = "Deleted Successfully",
-                    Result = null
-                };
-                return new JsonResult(response);
             }
+            var response = new ApiResponse<object>
+            {
+                Status = true,
+                Message = "Deleted Successfully",
+                Result = null
+            };
+            return new JsonResult(response);
         }
+    }
     public class PasswordUpdateRequest
     {
         public int Id { get; set; }
